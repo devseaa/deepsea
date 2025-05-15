@@ -99,11 +99,20 @@
       border-radius: 8px;
       border: none;
     }
+    #videoPlayer {
+      width: 100%;
+      max-width: 640px;
+      margin: 20px auto;
+      display: none;
+    }
   </style>
 </head>
 <body>
   <header>deepsea</header>
   <div class="spacer"></div>
+  <div id="videoPlayer">
+    <video id="player" width="100%" controls></video>
+  </div>
   <div class="movie-list" id="movieList"></div>
   <div class="bottom-bar">
     <div class="plus-button" onclick="toggleBubbleBar()">+</div>
@@ -123,6 +132,8 @@
     const videoTitle = document.getElementById("videoTitle");
     const videoDescription = document.getElementById("videoDescription");
     const movieList = document.getElementById("movieList");
+    const player = document.getElementById("player");
+    const videoPlayerContainer = document.getElementById("videoPlayer");
 
     function toggleBubbleBar() {
       bubbleBar.style.display = bubbleBar.style.display === "flex" ? "none" : "flex";
@@ -134,15 +145,17 @@
 
     let selectedVideoFile;
     let thumbnailURL;
+    let videoURL;
 
     videoInput.addEventListener("change", (e) => {
       const file = e.target.files[0];
       if (!file) return;
       selectedVideoFile = file;
+      videoURL = URL.createObjectURL(file);
       videoTitle.value = file.name;
 
       const videoElement = document.createElement("video");
-      videoElement.src = URL.createObjectURL(file);
+      videoElement.src = videoURL;
       videoElement.currentTime = 1;
       videoElement.addEventListener("loadeddata", () => {
         const canvas = document.createElement("canvas");
@@ -164,18 +177,22 @@
         const reader = new FileReader();
         reader.onload = () => {
           thumbnailURL = reader.result;
-          appendCard(title);
+          appendCard(title, videoURL);
         };
         reader.readAsDataURL(thumbnailInput.files[0]);
       } else {
-        appendCard(title);
+        appendCard(title, videoURL);
       }
     }
 
-    function appendCard(titleText) {
+    function appendCard(titleText, videoSrc) {
       const card = document.createElement("div");
       card.className = "movie-card";
-      card.onclick = () => window.location.href = "https://devseaa.github.io/deepsea/video-player.html";
+      card.onclick = () => {
+        player.src = videoSrc;
+        videoPlayerContainer.style.display = "block";
+        player.play();
+      };
 
       const img = document.createElement("img");
       img.src = thumbnailURL || "";
@@ -195,9 +212,9 @@
       videoDescription.value = "";
       selectedVideoFile = null;
       thumbnailURL = null;
+      videoURL = null;
       bubbleBar.style.display = "none";
     }
   </script>
 </body>
 </html>
-
